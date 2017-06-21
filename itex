@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 proc tryInstallPackage { name } {
-	global latexpid oldresult result spawn_id argv
+	global cmd latexpid oldresult result spawn_id argv
 
 	# Set result
 	set result $name
