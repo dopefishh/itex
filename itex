@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 proc tryInstallPackage { name } {
-	global cmd latexpid oldresult result spawn_id argv
+	global cmd oldresult result argv
 
 	# Set result
 	set result $name
@@ -11,24 +11,20 @@ proc tryInstallPackage { name } {
 		send_user "Is this not an image? Aborting...\n"
 		exit
 	# Install the package with tlmgri
-	} { spawn tlmgri $result
+	} { close
+		spawn tlmgri $result
 		interact
-		# Reset spawn id to kill original pdflatex
-		set spawn_id $latexpid
-		close
 		wait
 		# Respawn pdflatex
 		spawn $cmd {*}$argv
-		set oldresult $result
 		exp_continue
 	}
 }
 
 # Start latex and save the pid to kill it later
-set cmd [lindex $argv 0]
+set cmd [lindex $argv 1]
 set argv [lrange $argv 1 end]
 spawn $cmd {*}$argv
-set latexpid $spawn_id
 
 # Initialize the saved result to compare later
 set oldresult ""
@@ -36,16 +32,19 @@ set result ""
 
 expect {
 	# Regular sty file is missing
-	-re "^.*File .(.*). not found.*$" {
+	-re "File .(.*). not found" {
 		tryInstallPackage $expect_out(1,string)
-	} -re "^.*language definition file (.*) was not foun" {
 	# Bibtex ldf file is missing
+	} -re "language definition file (.*) was not foun" {
 		tryInstallPackage $expect_out(1,string)
-	} -re "^.*Encoding file .(.*). not found." {
 	# Font encoding file is missing
+	} -re "Encoding file .(.*). not found" {
 		tryInstallPackage $expect_out(1,string)
-	} timeout {
+	# Glossaries language module (not working yet...)
+	} -re "(glossaries-.*)' or similar" }
+		tryInstallPackage $expect_out(1,string)
 	# Timeout
+	} timeout {
 		send_user "Compilation timed out???"
 		exit
 	}
