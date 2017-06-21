@@ -1,0 +1,27 @@
+#!/bin/bash
+if [[ "$#" -lt 1 ]]; then
+	echo "Usage: $0 [TLMGR OPTS] FILE"
+	exit 1
+fi
+
+#Chop of the last argument and save in FTS
+FTS="${@: -1}"
+set -- "${@:1:$(($#-1))}"
+
+PKGS="$(tlmgr search --global --file "/$FTS" 2>/dev/null | grep -Po "^.*(?=:$)")"
+if [[ -z "$PKGS" ]]; then
+	echo "No packages found..."
+	exit 1
+elif [[ $(wc -w <<< "$PKGS") -eq 1 ]]; then
+	tlmgr install "$@" "$PKGS"
+else
+	select package in $PKGS; do
+		INDEX=1
+		for p in $PKGS; do
+			if [ $((INDEX++)) -eq $REPLY ]; then
+				tlmgr install "$@" "$p"
+			fi
+		done
+		break;
+	done
+fi

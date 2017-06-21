@@ -1,0 +1,52 @@
+#!/usr/bin/expect
+proc tryInstallPackage { name } {
+	global latexpid oldresult result spawn_id argv
+
+	# Set result
+	set result $name
+	send_user "\nTrying to install missing package\n"
+	# Encountering this result for the second time...
+	if {$oldresult == $result} {
+		send_user "$result has been tried twice with no results\n"
+		send_user "Is this not an image? Aborting...\n"
+		exit
+	# Install the package with tlmgri
+	} { spawn tlmgri $result
+		interact
+		# Reset spawn id to kill original pdflatex
+		set spawn_id $latexpid
+		close
+		wait
+		# Respawn pdflatex
+		spawn $cmd {*}$argv
+		set oldresult $result
+		exp_continue
+	}
+}
+
+# Start latex and save the pid to kill it later
+set cmd [lindex $argv 0]
+set argv [lrange $argv 1 end]
+spawn $cmd {*}$argv
+set latexpid $spawn_id
+
+# Initialize the saved result to compare later
+set oldresult ""
+set result ""
+
+expect {
+	# Regular sty file is missing
+	-re "^.*File .(.*). not found.*$" {
+		tryInstallPackage $expect_out(1,string)
+	} -re "^.*language definition file (.*) was not foun" {
+	# Bibtex ldf file is missing
+		tryInstallPackage $expect_out(1,string)
+	} -re "^.*Encoding file .(.*). not found." {
+	# Font encoding file is missing
+		tryInstallPackage $expect_out(1,string)
+	} timeout {
+	# Timeout
+		send_user "Compilation timed out???"
+		exit
+	}
+}
