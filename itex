@@ -1,51 +1,65 @@
 #!/usr/bin/expect
 proc tryInstallPackage { name } {
-	global cmd oldresult result argv
+	global cmd oldresult result argv latexpid spawn_id
+
+	set spawn_id $latexpid
+	close
 
 	# Set result
 	set result $name
 	send_user "\nTrying to install missing package\n"
 	# Encountering this result for the second time...
 	if {$oldresult == $result} {
-		send_user "$result has been tried twice with no results\n"
-		send_user "Is this not an image? Aborting...\n"
-		exit
-	# Install the package with tlmgri
-	} { close
-		spawn tlmgri $result
-		interact
-		wait
-		# Respawn pdflatex
-		spawn $cmd {*}$argv
-		exp_continue
+		send_user "
+$result has been tried twice with no results
+This happens if the file can't be found or tlmgri fails for some other reason.
+You can try running the command manually: tlmgri $result
+Aborting...
+"
+		exit 1
+	}
+
+	spawn tlmgri $result
+	interact
+	wait
+	send_user "tlmgr is done\n"
+	set oldresult $result
+	runCmd
+}
+
+proc runCmd { } {
+	global cmd argv latexpid spawn_id
+	spawn $cmd {*}$argv
+	set latexpid $spawn_id
+
+	expect {
+		# Regular sty file is missing
+		-re "File .(.*). not found" {
+			tryInstallPackage $expect_out(1,string)
+		# Bibtex ldf file is missing
+		} -re "language definition file (.*) was not foun" {
+			tryInstallPackage $expect_out(1,string)
+		# Font encoding file is missing
+		} -re "Encoding file .(.*). not found" {
+			tryInstallPackage $expect_out(1,string)
+		# Glossaries language module (not working yet...)
+		} -re "(glossaries-.*)' or similar" {
+			tryInstallPackage $expect_out(1,string)
+		# Timeout
+		} timeout {
+			send_user "Compilation timed out???"
+			exit
+		}
 	}
 }
 
 # Start latex and save the pid to kill it later
-set cmd [lindex $argv 1]
+set cmd [lindex $argv 0]
 set argv [lrange $argv 1 end]
-spawn $cmd {*}$argv
 
 # Initialize the saved result to compare later
 set oldresult ""
 set result ""
+set latexpid 0
 
-expect {
-	# Regular sty file is missing
-	-re "File .(.*). not found" {
-		tryInstallPackage $expect_out(1,string)
-	# Bibtex ldf file is missing
-	} -re "language definition file (.*) was not foun" {
-		tryInstallPackage $expect_out(1,string)
-	# Font encoding file is missing
-	} -re "Encoding file .(.*). not found" {
-		tryInstallPackage $expect_out(1,string)
-	# Glossaries language module (not working yet...)
-	} -re "(glossaries-.*)' or similar" }
-		tryInstallPackage $expect_out(1,string)
-	# Timeout
-	} timeout {
-		send_user "Compilation timed out???"
-		exit
-	}
-}
+runCmd
