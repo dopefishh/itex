@@ -34,7 +34,9 @@ proc runCmd { } {
 
 	expect {
 		# Regular sty file is missing
-		-re "File .(.*). not found" {
+		  -re "File ..*-eps-converted-to.pdf. not found" {
+			tryInstallPackage "epstopdf"
+		} -re "File .(.*). not found" {
 			tryInstallPackage $expect_out(1,string)
 		# Bibtex ldf file is missing
 		} -re "language definition file (.*) was not foun" {
