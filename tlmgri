@@ -11,7 +11,7 @@ set -- "${@:1:$(($#-1))}"
 
 PKGS="$(tlmgr search --global --file "/$FTS" 2>/dev/null | grep -Po "^.*(?=:$)")"
 if [[ -z "$PKGS" ]]; then
-	echo "No packages found..."
+	echo "No packages found..." >&2
 	exit 1
 elif [[ $(wc -w <<< "$PKGS") -eq 1 ]]; then
 	tlmgr install "$@" "$PKGS"
