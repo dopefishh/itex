@@ -1,29 +1,28 @@
 #!/usr/bin/expect
+proc reallyInstall { name } {
+	spawn tlmgri $name
+	interact
+	lassign [wait] pid spawnid os_error_flag value
+	send_user "Error code: $os_error_flag $value\n"
+	if {$value != 0} {
+		send_user "
+Installing $name with tlmgri has failed. This happens if the file is not in
+a package or tlmgri fails for some other reason. You can try running the
+command manually: tlmgri $name. Aborting...
+"
+		exit 1
+	}
+}
+
 proc tryInstallPackage { name } {
-	global cmd oldresult result argv latexpid spawn_id
+	global cmd argv latexpid spawn_id
 
 	set spawn_id $latexpid
 	close
 
-	# Set result
-	set result $name
 	send_user "\nTrying to install missing package\n"
-	# Encountering this result for the second time...
-	if {$oldresult == $result} {
-		send_user "
-$result has been tried twice with no results
-This happens if the file can't be found or tlmgri fails for some other reason.
-You can try running the command manually: tlmgri $result
-Aborting...
-"
-		exit 1
-	}
+	reallyInstall "$name"
 
-	spawn tlmgri $result
-	interact
-	wait
-	send_user "tlmgr is done\n"
-	set oldresult $result
 	runCmd
 }
 
@@ -50,7 +49,7 @@ proc runCmd { } {
 		# Timeout
 		} timeout {
 			send_user "Compilation timed out???"
-			exit
+			exit 1
 		}
 	}
 }
@@ -59,9 +58,18 @@ proc runCmd { } {
 set cmd [lindex $argv 0]
 set argv [lrange $argv 1 end]
 
-# Initialize the saved result to compare later
-set oldresult ""
-set result ""
+# Check commands existence
+spawn "which" $cmd
+lassign [wait] pid spawnid os_error_flag value
+if {$value != 0} {
+	send_user "Command $cmd not found. Do you want to try to install it? Y/N\n"
+	expect_user {
+		Y { reallyInstall "$cmd" }
+		N { send_user "Okay... Bye\n"; exit 1 }
+	}
+}
+
+# Initialize the pid to kill later
 set latexpid 0
 
 runCmd
