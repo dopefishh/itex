@@ -46,6 +46,8 @@ proc runCmd { } {
 		# Glossaries language module (not working yet...)
 		} -re "(glossaries-.*)' or similar" {
 			tryInstallPackage $expect_out(1,string)
+		} -re "failed to make (.*\.tfm)" {
+			tryInstallPackage $expect_out(1,string)
 		# Timeout
 		} timeout {
 			send_user "Compilation timed out???"
