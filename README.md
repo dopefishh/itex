@@ -2,8 +2,16 @@
 (Semi)Automatic package installing for \*TeX
 
 ## Requirements
-- `expect`
-- `bash`
+- `expect` (http://expect.sourceforge.net/)
+- `bash` (https://www.gnu.org/software/bash/)
+- `texlive` (https://tug.org/texlive/)
+
+You can install this on a debian-like system with the following command:
+
+    # apt-get install expect bash
+
+For texlive, you need at least the infrastructure (`tlmgr`). No packages are
+required.
 
 ## Usage
 ### `tlmgri`
@@ -15,7 +23,13 @@ are applied on the `tlmgr install` command. Thus, you can do something like:
 `tlmgri --dry-run booktabs.sty`.
 
 ### `itex`
-Usage: `itex *tex [TEXOPTS]`
+Usage: 
+
+    itex *tex [TEXOPTS]
+
+e.g.:
+
+    itex pdflatex -no-shell-escape document.tex
 
 Prepend your \*TeX command with `itex`. When the command starts to complain
 about missing packages it automatically launches `tlmgri` to install the
