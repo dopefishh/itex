@@ -44,9 +44,13 @@ proc runCmd { } {
 		} -re "Encoding file .(.*). not found" {
 			tryInstallPackage $expect_out(1,string)
 		# Glossaries language module (not working yet...)
-		} -re "(glossaries-.*)' or similar" {
+		} -re "`(glossaries-.*)' or similar" {
 			tryInstallPackage $expect_out(1,string)
 		} -re "failed to make (.*\.tfm)" {
+			tryInstallPackage $expect_out(1,string)
+		} -re "Package `(.*)' not installed, or version too old?" {
+			tryInstallPackage $expect_out(1,string)
+		} -re "mktexpk: (.*): not found" {
 			tryInstallPackage $expect_out(1,string)
 		# Timeout
 		} timeout {
