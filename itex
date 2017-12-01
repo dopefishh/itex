@@ -46,11 +46,17 @@ proc runCmd { } {
 		# Glossaries language module (not working yet...)
 		} -re "`(glossaries-.*)' or similar" {
 			tryInstallPackage $expect_out(1,string)
+		# Font building
 		} -re "failed to make (.*\.tfm)" {
 			tryInstallPackage $expect_out(1,string)
+		# Missing fonts for acmart
 		} -re "Package `(.*)' not installed, or version too old?" {
 			tryInstallPackage $expect_out(1,string)
+		# Missing binaries for building packages
 		} -re "mktexpk: (.*): not found" {
+			tryInstallPackage $expect_out(1,string)
+		# Bibtex: missing style
+		} -re "I couldn't open style file (.*)" {
 			tryInstallPackage $expect_out(1,string)
 		# Timeout
 		} timeout {
