@@ -72,6 +72,14 @@ proc runCmd { } {
 	}
 }
 
+# Check if there are any arguments
+if { $argc == 0 } {
+        send_user "Usage: itex *tex \[ARGS\]\n"
+        send_user "\n"
+		send_user "  e.g.: itex pdflatex -no-shell-escape document.tex\n"
+        exit 1
+}
+
 # Start latex and save the pid to kill it later
 set cmd [lindex $argv 0]
 set argv [lrange $argv 1 end]
