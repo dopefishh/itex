@@ -52,11 +52,17 @@ proc runCmd { } {
 		# Missing fonts for acmart
 		} -re "Package `(.*)' not installed, or version too old?" {
 			tryInstallPackage $expect_out(1,string)
+		# Missing package for acmart
+		} -re "Class acmart Warning: You do not have (.*) package installed." {
+			tryInstallPackage $expect_out(1,string)
 		# Missing binaries for building packages
 		} -re "mktexpk: (.*): not found" {
 			tryInstallPackage $expect_out(1,string)
 		# Bibtex: missing style
 		} -re "I couldn't open style file (.*)" {
+			tryInstallPackage $expect_out(1,string)
+		# Pdflatex missing encoding file
+		} -re "pdflatex \(file (.*)\): cannot open encoding file for reading" {
 			tryInstallPackage $expect_out(1,string)
 		# Timeout
 		} timeout {
