@@ -1,7 +1,8 @@
 #!/usr/bin/expect
 proc reallyInstall { name } {
-	global tlmgri
-	spawn $tlmgri $name
+	global tlmgri targs
+	
+	spawn $tlmgri $targs $name
 	interact
 	lassign [wait] pid spawnid os_error_flag value
 	send_user "Error code: $os_error_flag $value\n"
@@ -86,6 +87,7 @@ proc help { } {
 
 # Default options
 set tlmgri "tlmgri"
+set targs ""
 
 # Parse command line arguments
 if {$argc == 0} {
@@ -109,6 +111,14 @@ while { $i < $argc } {
 			} else {
 				set tlmgri [lindex $argv $i]
 			}
+		}
+		"-a" {
+			incr i
+			if {$i >= $argc} {
+				send_user "-a requires an argument\n"
+				exit 1
+			}
+			set targs [lindex $argv $i]
 		}
 		default {
 			break
