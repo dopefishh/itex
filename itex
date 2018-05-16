@@ -45,9 +45,25 @@ proc runCmd { } {
 		} -re "Encoding file .(.*). not found" {
 			tryInstallPackage $expect_out(1,string)
 		# Glossaries language module (not working yet...)
-		} -re "(glossaries-.*)' or similar" {
+		} -re "`(glossaries-.*)' or similar" {
 			tryInstallPackage $expect_out(1,string)
+		# Font building
 		} -re "failed to make (.*\.tfm)" {
+			tryInstallPackage $expect_out(1,string)
+		# Missing fonts for acmart
+		} -re "Package `(.*)' not installed, or version too old?" {
+			tryInstallPackage $expect_out(1,string)
+		# Missing package for acmart
+		} -re "Class acmart Warning: You do not have (.*) package installed." {
+			tryInstallPackage $expect_out(1,string)
+		# Missing binaries for building packages
+		} -re "mktexpk: (.*): not found" {
+			tryInstallPackage $expect_out(1,string)
+		# Bibtex: missing style
+		} -re "I couldn't open style file (.*)" {
+			tryInstallPackage $expect_out(1,string)
+		# Pdflatex missing encoding file
+		} -re "pdflatex \(file (.*)\): cannot open encoding file for reading" {
 			tryInstallPackage $expect_out(1,string)
 		# Timeout
 		} timeout {
@@ -78,7 +94,6 @@ if {$argc == 0} {
 
 set i 0
 while { $i < $argc } {
-	send_user "arg $i: [lindex $argv $i]\n"
 	switch [lindex $argv $i] {
 		"-h" {
 			help
