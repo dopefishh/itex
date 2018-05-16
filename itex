@@ -9,7 +9,6 @@ proc reallyInstall { name } {
 	}
 	interact
 	lassign [wait] pid spawnid os_error_flag value
-	send_user "Error code: $os_error_flag $value\n"
 	if {$value != 0} {
 		send_user "
 Installing $name with tlmgri has failed. This happens if the file is not in
@@ -64,11 +63,11 @@ proc runCmd { } {
 		# Missing binaries for building packages
 		} -re "mktexpk: (.*): not found" {
 			tryInstallPackage $expect_out(1,string)
+		# Pdflatex missing encoding file
+		} -re ".*pdflatex \(file (.*)\): cannot open encoding file for reading" {
+			tryInstallPackage $expect_out(1,string)
 		# Bibtex: missing style
 		} -re "I couldn't open style file (.*)" {
-			tryInstallPackage $expect_out(1,string)
-		# Pdflatex missing encoding file
-		} -re "pdflatex \(file (.*)\): cannot open encoding file for reading" {
 			tryInstallPackage $expect_out(1,string)
 		# Timeout
 		} timeout {
@@ -76,6 +75,8 @@ proc runCmd { } {
 			exit 1
 		}
 	}
+	lassign [wait] pid spawnid os_error_flag value
+	exit $value
 }
 
 proc help { } {
