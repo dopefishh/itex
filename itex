@@ -1,6 +1,7 @@
 #!/usr/bin/expect
 proc reallyInstall { name } {
-	spawn tlmgri $name
+	global tlmgri
+	spawn $tlmgri $name
 	interact
 	lassign [wait] pid spawnid os_error_flag value
 	send_user "Error code: $os_error_flag $value\n"
@@ -56,13 +57,63 @@ proc runCmd { } {
 	}
 }
 
-# Start latex and save the pid to kill it later
-set cmd [lindex $argv 0]
-set argv [lrange $argv 1 end]
+proc help { } {
+	global argv0
+	send_user "Usage: $argv0 \[OPTIONS\] TEXLIVECOMMAND\n"
+	send_user "\n"
+	send_user "The arguments from the first positional are used as the texlive command\n"
+	send_user "Available options:\n"
+	send_user " -h/--help Show this help\n"
+	send_user " -t PATH   Location of the tlmgri binary if not in path\n"
+	exit 0
+}
+
+# Default options
+set tlmgri "tlmgri"
+
+# Parse command line arguments
+if {$argc == 0} {
+	help
+}
+
+set i 0
+while { $i < $argc } {
+	send_user "arg $i: [lindex $argv $i]\n"
+	switch [lindex $argv $i] {
+		"-h" {
+			help
+		}
+		"--help" {
+			help
+		}
+		"-t" {
+			incr i
+			if {$i >= $argc} {
+				send_user "-t requires an argument\n"
+				exit 1
+			} else {
+				set tlmgri [lindex $argv $i]
+			}
+		}
+		default {
+			break
+		}
+	}
+	incr i
+}
+
+set cmd [lindex $argv $i]
+if {$cmd == "" } {
+	send_user "Need at least one positional argument\n"
+	exit 1
+}
+incr i
+set argv [lrange $argv $i end]
 
 # Check commands existence
 spawn "which" $cmd
 lassign [wait] pid spawnid os_error_flag value
+
 if {$value != 0} {
 	send_user "Command $cmd not found. Do you want to try to install it? Y/N\n"
 	expect_user {
