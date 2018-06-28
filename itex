@@ -64,6 +64,9 @@ proc runCmd { } {
 		# Pdflatex missing encoding file
 		} -re "pdflatex \(file (.*)\): cannot open encoding file for reading" {
 			tryInstallPackage $expect_out(1,string)
+		# Package using \input to include .sty files
+		} -re "! I can't find file `(.*)'." {
+			tryInstallPackage $expect_out(1,string)
 		# Timeout
 		} timeout {
 			send_user "Compilation timed out???"
