@@ -1,9 +1,14 @@
 #!/usr/bin/expect
 proc reallyInstall { name } {
-	spawn tlmgri $name
+	global tlmgri targs
+	
+	if { $targs == "" } {
+		spawn $tlmgri $name
+	} else {
+		spawn $tlmgri $targs $name
+	}
 	interact
 	lassign [wait] pid spawnid os_error_flag value
-	send_user "Error code: $os_error_flag $value\n"
 	if {$value != 0} {
 		send_user "
 Installing $name with tlmgri has failed. This happens if the file is not in
@@ -53,10 +58,13 @@ proc runCmd { } {
 		} -re "Package `(.*)' not installed, or version too old?" {
 			tryInstallPackage $expect_out(1,string)
 		# Missing package for acmart
-		} -re "Class acmart Warning: You do not have (.*) package installed." {
+		} -re "Class acmart Warning: You do not have the (.*) package installed." {
 			tryInstallPackage $expect_out(1,string)
 		# Missing binaries for building packages
 		} -re "mktexpk: (.*): not found" {
+			tryInstallPackage $expect_out(1,string)
+		# Pdflatex missing encoding file
+		} -re ".*pdflatex \(file (.*)\): cannot open encoding file for reading" {
 			tryInstallPackage $expect_out(1,string)
 		# Bibtex: missing style
 		} -re "I couldn't open style file (.*)" {
@@ -73,29 +81,93 @@ proc runCmd { } {
 			exit 1
 		}
 	}
+	lassign [wait] pid spawnid os_error_flag value
+	exit $value
 }
 
-# Check if there are any arguments
-if { $argc == 0 } {
-        send_user "Usage: itex *tex \[ARGS\]\n"
-        send_user "\n"
-		send_user "  e.g.: itex pdflatex -no-shell-escape document.tex\n"
-        exit 1
+proc help { } {
+	global argv0
+	send_user "Usage: $argv0 \[OPTIONS\] TEXLIVECOMMAND\n"
+	send_user "\n"
+	send_user "The arguments from the first positional are used as the texlive command\n"
+	send_user "Available options:\n"
+	send_user " -h/--help Show this help\n"
+	send_user " -t PATH   Location of the tlmgri binary if not in path\n"
+	send_user " -b        Query before trying to install TEXLIVECOMMAND\n"
+	exit 0
 }
 
-# Start latex and save the pid to kill it later
-set cmd [lindex $argv 0]
-set argv [lrange $argv 1 end]
+# Default options
+set tlmgri "tlmgri"
+set targs ""
+set autobinary 0
+
+# Parse command line arguments
+if {$argc == 0} {
+	help
+}
+
+set i 0
+while { $i < $argc } {
+	switch [lindex $argv $i] {
+		"-h" {
+			help
+		}
+		"--help" {
+			help
+		}
+		"-t" {
+			incr i
+			if {$i >= $argc} {
+				send_user "-t requires an argument\n"
+				exit 1
+			} else {
+				set tlmgri [lindex $argv $i]
+			}
+		}
+		"-a" {
+			incr i
+			if {$i >= $argc} {
+				send_user "-a requires an argument\n"
+				exit 1
+			}
+			set targs [lindex $argv $i]
+		}
+		"-b" {
+			set autobinary 1
+		}
+		default {
+			break
+		}
+	}
+	incr i
+}
+
+set cmd [lindex $argv $i]
+if {$cmd == "" } {
+	send_user "Need at least one positional argument\n"
+	exit 1
+}
+incr i
+set argv [lrange $argv $i end]
 
 # Check commands existence
 spawn "which" $cmd
 lassign [wait] pid spawnid os_error_flag value
+
 if {$value != 0} {
 	send_user "Command $cmd not found. Do you want to try to install it? Y/N\n"
-	expect_user {
-		Y { reallyInstall "$cmd" }
-		N { send_user "Okay... Bye\n"; exit 1 }
+	if { $autobinary == 1 } {
+		expect_user {
+			-re "\[yY\]" { }
+			-re "\[nN\]" { send_user "Okay... Bye\n"; exit 1 }
+		}
 	}
+	send_user "Installing binaries is tricky, texlive offers them in different"
+	send_user " packages for each architecture so you are posed with a big "
+	send_user "list of options. However, in most cases you can choose the one "
+	send_user "with no architecture suffix.\n"
+	reallyInstall "$cmd"
 }
 
 # Initialize the pid to kill later
