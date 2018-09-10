@@ -61,7 +61,7 @@ proc runCmd { } {
 		} -re "Class acmart Warning: You do not have the (.*) package installed." {
 			tryInstallPackage $expect_out(1,string)
 		# Missing binaries for building packages
-		} -re "mktexpk: (.*): not found" {
+		} -re "mktexpk: (\[^:\]*): not found" {
 			tryInstallPackage $expect_out(1,string)
 		# Pdflatex missing encoding file
 		} -re ".*pdflatex \(file (.*)\): cannot open encoding file for reading" {
