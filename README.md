@@ -15,7 +15,7 @@ required.
 
 ## Usage
 ### `tlmgri`
-Usage: `tlmgr [TLMGROPTS] FILENAME`
+Usage: `tlmgri [TLMGROPTS] FILENAME`
 
 This will search for a package containing exactly `FILENAME`. If there is only
 one it will be installed. If there are multiple a select is given. `TLMGROPTS`

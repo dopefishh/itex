@@ -37,9 +37,10 @@ proc runCmd { } {
 	set latexpid $spawn_id
 
 	expect {
-		# Regular sty file is missing
+		# epstopdf is missing
 		  -re "File ..*-eps-converted-to.pdf. not found" {
 			tryInstallPackage "epstopdf"
+		# include,input,sty file missing
 		} -re "File .(.*). not found" {
 			tryInstallPackage $expect_out(1,string)
 		# Bibtex ldf file is missing
@@ -69,12 +70,12 @@ proc runCmd { } {
 		# Bibtex: missing style
 		} -re "I couldn't open style file (.*)" {
 			tryInstallPackage $expect_out(1,string)
-		# Pdflatex missing encoding file
-		} -re "pdflatex \(file (.*)\): cannot open encoding file for reading" {
-			tryInstallPackage $expect_out(1,string)
 		# Package using \input to include .sty files
 		} -re "! I can't find file `(.*)'." {
 			tryInstallPackage $expect_out(1,string)
+		# Tikz package missing
+		} -re "! Package tikz Error: I did not find the tikz library '(.*)'" {
+			tryInstallPackage "(tikz|pgf)library$expect_out(1,string).code.tex"
 		# Timeout
 		} timeout {
 			send_user "Compilation timed out???"
