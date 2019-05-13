@@ -76,6 +76,9 @@ proc runCmd { } {
 		# Tikz package missing
 		} -re "! Package tikz Error: I did not find the tikz library '(.*)'" {
 			tryInstallPackage "(tikz|pgf)library$expect_out(1,string).code.tex"
+		# Babel hyphenation patterns
+		} -re ".babel..*the language `(.*)' into the format." {
+			tryInstallPackage "hyphen-$expect_out(1,string)"
 		# Timeout
 		} timeout {
 			send_user "Compilation timed out???"
