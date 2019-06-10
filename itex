@@ -39,45 +39,59 @@ proc runCmd { } {
 	expect {
 		# epstopdf is missing
 		  -re "File ..*-eps-converted-to.pdf. not found" {
+			send_user "epstopdf is missing\n"
 			tryInstallPackage "epstopdf"
 		# include,input,sty file missing
 		} -re "File .(.*). not found" {
+			send_user "include, input,sty file missing\n"
 			tryInstallPackage $expect_out(1,string)
 		# Bibtex ldf file is missing
 		} -re "language definition file (.*) was not foun" {
+			send_user "Bibtex ldf file is missing\n"
 			tryInstallPackage $expect_out(1,string)
 		# Font encoding file is missing
 		} -re "Encoding file .(.*). not found" {
+			send_user "Font encoding file is missing\n"
 			tryInstallPackage $expect_out(1,string)
 		# Glossaries language module (not working yet...)
 		} -re "`(glossaries-.*)' or similar" {
+			send_user "Glossaries language module missing\n"
 			tryInstallPackage $expect_out(1,string)
 		# Font building
 		} -re "failed to make (.*\.tfm)" {
+			send_user "Required font missing\n"
 			tryInstallPackage $expect_out(1,string)
 		# Missing fonts for acmart
 		} -re "Package `(.*)' not installed, or version too old?" {
+			send_user "Missing font for acmart\n"
 			tryInstallPackage $expect_out(1,string)
 		# Missing package for acmart
 		} -re "Class acmart Warning: You do not have the (.*) package installed." {
+			send_user "Missing package for acmart\n"
 			tryInstallPackage $expect_out(1,string)
 		# Missing binaries for building packages
 		} -re "mktexpk: (\[^:\]*): not found" {
+			send_user "Missing binaries for building intermediate files\n"
 			tryInstallPackage $expect_out(1,string)
 		# Pdflatex missing encoding file
 		} -re ".*pdflatex \(file (.*)\): cannot open encoding file for reading" {
+			send_user "Pdflatex missing encoding file\n"
 			tryInstallPackage $expect_out(1,string)
 		# Bibtex: missing style
 		} -re "I couldn't open style file (.*)" {
+			send_user "Bibtex style file missing\n"
 			tryInstallPackage $expect_out(1,string)
 		# Package using \input to include .sty files
 		} -re "! I can't find file `(.*)'." {
+			send_user "Package using \\input is missing a file\n"
 			tryInstallPackage $expect_out(1,string)
 		# Tikz package missing
 		} -re "! Package tikz Error: I did not find the tikz library '(.*)'" {
+			send_user "Tikz package is missing\n"
 			tryInstallPackage "(tikz|pgf)library$expect_out(1,string).code.tex"
 		# Babel hyphenation patterns
 		} -re ".babel..*the language `(.*)' into the format." {
+			send_user "Babel hyphenation pattern is missing\n"
 			tryInstallPackage "hyphen-$expect_out(1,string)"
 		# Timeout
 		} timeout {

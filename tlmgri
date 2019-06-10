@@ -11,10 +11,14 @@ set -- "${@:1:$(($#-1))}"
 
 if [[ "$FTS" == *.* ]]; then
 	echo "Detected an extension, try by file"
-	PKGS="$(tlmgr search --global --file "/$FTS" 2>/dev/null | grep -Po "^.*(?=:$)")"
+	PKGS="$(tlmgr search --global --file "/$FTS" 2>/dev/null | grep -Po "^.*(?=:$)" || true)"
 else
 	echo "Detected no extension, try by name"
-	PKGS="$(tlmgr search --global "$FTS" 2>/dev/null | grep -Po "^.*(?= - .*$)")"
+	PKGS="$(tlmgr search --global "$FTS" 2>/dev/null | grep -Po "^.*(?= - .*$)" || true)"
+	if [[ -z "$PKGS" ]]; then
+		echo "Sometimes a font metric is falsely given without the extension, trying with .tfm"
+		PKGS="$(tlmgr search --global --file "/$FTS.tfm" 2>/dev/null | grep -Po "^.*(?=:$)" || true)"
+	fi
 fi
 
 if [[ -z "$PKGS" ]]; then
