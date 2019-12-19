@@ -2,7 +2,7 @@
 (Semi)Automatic package installing for \*TeX
 
 ## Requirements
-- `expect` (http://expect.sourceforge.net/)
+- `expect` (https://core.tcl-lang.org/expect/index)
 - `bash` (https://www.gnu.org/software/bash/)
 - `texlive` (https://tug.org/texlive/)
 
