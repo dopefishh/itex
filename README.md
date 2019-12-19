@@ -25,11 +25,11 @@ are applied on the `tlmgr install` command. Thus, you can do something like:
 ### `itex`
 Usage: 
 
-    itex *tex [TEXOPTS]
+    itex [ITEXOPTS] TEXCOMMAND [TEXOPTS]
 
 e.g.:
 
-    itex pdflatex -no-shell-escape document.tex
+    itex -b -l pkgs.log pdflatex -no-shell-escape document.tex
 
 Prepend your \*TeX command with `itex`. When the command starts to complain
 about missing packages it automatically launches `tlmgri` to install the

@@ -20,12 +20,13 @@ command manually: tlmgri $name. Aborting...
 }
 
 proc tryInstallPackage { name } {
-	global cmd argv latexpid spawn_id
+	global cmd argv latexpid spawn_id pkglog
 
 	set spawn_id $latexpid
 	close
 
 	send_user "\nTrying to install missing package\n"
+	puts $pkglog "$name"
 	reallyInstall "$name"
 
 	runCmd
@@ -112,6 +113,8 @@ proc help { } {
 	send_user " -h/--help Show this help\n"
 	send_user " -t PATH   Location of the tlmgri binary if not in path\n"
 	send_user " -b        Query before trying to install TEXLIVECOMMAND\n"
+	send_user " -a ARG    Add an argument to tlmgri\n"
+	send_user " -l PATH   Write all missing files that were installed to PATH\n"
 	exit 0
 }
 
@@ -119,6 +122,7 @@ proc help { } {
 set tlmgri "tlmgri"
 set targs ""
 set autobinary 0
+set pkglog [open "/dev/null" w]
 
 # Parse command line arguments
 if {$argc == 0} {
@@ -141,6 +145,15 @@ while { $i < $argc } {
 				exit 1
 			} else {
 				set tlmgri [lindex $argv $i]
+			}
+		}
+		"-l" {
+			incr i
+			if {$i >= $argc} {
+				send_user "-l requires an argument\n"
+				exit 1
+			} else {
+				set pkglog [open [lindex $argv $i] w]
 			}
 		}
 		"-a" {
