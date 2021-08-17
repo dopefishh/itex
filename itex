@@ -78,10 +78,6 @@ proc runCmd { } {
 		} -re "mktexpk: (\[^:\]*): not found" {
 			send_user "Missing binaries for building intermediate files\n"
 			tryInstallPackage $expect_out(1,string)
-		# Pdflatex missing encoding file
-		} -re ".*pdflatex \(file (.*)\): cannot open encoding file for reading" {
-			send_user "Pdflatex missing encoding file\n"
-			tryInstallPackage $expect_out(1,string)
 		# Bibtex: missing style
 		} -re "I couldn't open style file (.*)" {
 			send_user "Bibtex style file missing\n"
@@ -105,6 +101,17 @@ proc runCmd { } {
 		}
 	}
 	lassign [wait] pid spawnid os_error_flag value
+	if {$value != 0} {
+		send_user "$cmd failed. However, not all is lost since I cannot detect
+some errors in time:\n
+\n
+
+Error -- Solution
+=================
+!pdfTeX error: pdflatex \(file (.*\.enc)\): cannot open encoding file for reading
+	-- tlmgri install 8r.enc
+"
+	}
 	exit $value
 }
 
