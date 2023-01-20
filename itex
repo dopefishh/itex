@@ -94,6 +94,9 @@ proc runCmd { } {
 		} -re ".babel..*the language `(.*)' into the format." {
 			send_user "Babel hyphenation pattern is missing\n"
 			tryInstallPackage "hyphen-$expect_out(1,string)"
+		} -re "! Package biblatex Error: Style '(.*)' not found." {
+			send_user "Biblatex style file is missing\n"
+			tryInstallPackage "$expect_out(1,string).bbx"
 		# Timeout
 		} timeout {
 			send_user "Compilation timed out???"
@@ -110,6 +113,10 @@ Error -- Solution
 =================
 !pdfTeX error: pdflatex \(file (.*\.enc)\): cannot open encoding file for reading
 	-- tlmgri install 8r.enc
+/path/to/texlive/bin/x86_64-linux/mktexpk: 1: mf: not found
+	-- tlmgri install mf
+/path/to/texlive/bin/x86_64-linux/mktexpk: 262: gftopk: not found
+	-- tlmgri install gftopk
 "
 	}
 	exit $value

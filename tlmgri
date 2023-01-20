@@ -10,7 +10,7 @@ FTS="${@: -1}"
 set -- "${@:1:$(($#-1))}"
 
 case "$FTS" in
-	*.*|latex|luatex|etex|pdflatex|pdfetex|dviluatex|dvilualatex|bibtex)
+	*.*|latex|luatex|etex|pdflatex|pdfetex|dviluatex|dvilualatex|bibtex|mf|gftopk)
 		echo "Detected an extension or a familiar binary, try by exact file"
 		PKGS="$(tlmgr search --global --file "/$FTS" 2>/dev/null | grep -Po "^.*(?=:$)" || true)"
 		;;
